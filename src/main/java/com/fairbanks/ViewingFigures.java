@@ -1,4 +1,4 @@
-package com.virtualpairprogrammers;
+package com.fairbanks;
 
 import java.util.ArrayList;
 import java.util.List;
