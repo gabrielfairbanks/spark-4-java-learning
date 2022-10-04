@@ -12,11 +12,11 @@ public class Main {
 
     public static void main(String[] args) {
         List<Double> inputData = new ArrayList<>();
-        inputData.add(35.5);
-        inputData.add(8.4);
-        inputData.add(1893.45643);
-        inputData.add(2388.6456);
-        inputData.add(8467230923.94);
+        inputData.add(1.0);
+        inputData.add(2.0);
+        inputData.add(1.0);
+        inputData.add(5.0);
+        inputData.add(1.0);
 
         /*
           Configures Spark
@@ -33,7 +33,9 @@ public class Main {
         JavaRDD<Double> myRdd = sc.parallelize(inputData);
 
         // Experimenting with Reduce
-        myRdd.reduce((value1, value2) -> value1 + value2);
+        Double result = myRdd.reduce((value1, value2) -> value1 + value2);
+
+        System.out.println(result);
 
         sc.close();
     }
