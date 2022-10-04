@@ -13,12 +13,11 @@ import org.apache.spark.api.java.JavaSparkContext;
 public class Main {
 
     public static void main(String[] args) {
-        List<Double> inputData = new ArrayList<>();
-        inputData.add(1.0);
-        inputData.add(2.0);
-        inputData.add(1.0);
-        inputData.add(5.0);
-        inputData.add(1.0);
+        List<Integer> inputData = new ArrayList<>();
+        inputData.add(35);
+        inputData.add(12);
+        inputData.add(90);
+        inputData.add(20);
 
         /*
           Configures Spark
@@ -32,13 +31,16 @@ public class Main {
          */
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<Double> myRdd = sc.parallelize(inputData);
+        JavaRDD<Integer> myRdd = sc.parallelize(inputData);
 
         // Experimenting with Reduce
-        Double result = myRdd.reduce((value1, value2) -> value1 + value2); // It would be easier to write reduce(Double::sum), but leaving like this for educational purposes
-
+        Integer result = myRdd.reduce(Integer::sum);
         log.info("Reduce Result: " + result);
 
+        // Experimenting with Mapping
+        JavaRDD<Double> sqrtRdd = myRdd.map(Math::sqrt);
+        log.info("Map Result: ");
+        sqrtRdd.foreach(element -> log.info("\t - " + element));
         sc.close();
     }
 
