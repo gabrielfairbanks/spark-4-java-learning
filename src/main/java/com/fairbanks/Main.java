@@ -32,6 +32,9 @@ public class Main {
 
         JavaRDD<Double> myRdd = sc.parallelize(inputData);
 
+        // Experimenting with Reduce
+        myRdd.reduce((value1, value2) -> value1 + value2);
+
         sc.close();
     }
 
