@@ -3,11 +3,13 @@ package com.fairbanks;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.log4j.Log4j;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 
+@Log4j
 public class Main {
 
     public static void main(String[] args) {
@@ -33,9 +35,9 @@ public class Main {
         JavaRDD<Double> myRdd = sc.parallelize(inputData);
 
         // Experimenting with Reduce
-        Double result = myRdd.reduce((value1, value2) -> value1 + value2);
+        Double result = myRdd.reduce((value1, value2) -> value1 + value2); // It would be easier to write reduce(Double::sum), but leaving like this for educational purposes
 
-        System.out.println(result);
+        log.info("Reduce Result: " + result);
 
         sc.close();
     }
