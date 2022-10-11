@@ -31,21 +31,8 @@ public class Main {
          */
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<Integer> myRdd = sc.parallelize(inputData);
-
-        // Experimenting with Reduce
-        Integer result = myRdd.reduce(Integer::sum);
-        log.info("Reduce Result: " + result);
-
-        // Experimenting with Mapping
-        JavaRDD<Double> sqrtRdd = myRdd.map(Math::sqrt);
-        log.info("Map Result: ");
-        sqrtRdd.foreach(element -> log.info("\t - " + element));
-
-        // how many elements in RDD using map and reduce
-        JavaRDD<Long> singleIntegerRdd = sqrtRdd.map(value -> 1L);
-        Long count = singleIntegerRdd.reduce(Long::sum);
-        log.info("Rdd Count: " + count);
+        JavaRDD<Integer> originalIntegers = sc.parallelize(inputData);
+        JavaRDD<IntegerWithSquareRoot> sqrtRdd = originalIntegers.map(IntegerWithSquareRoot::new);
 
         sc.close();
 
