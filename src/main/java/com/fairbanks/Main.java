@@ -6,7 +6,6 @@ import java.util.List;
 
 import lombok.extern.log4j.Log4j;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 
@@ -33,9 +32,10 @@ public class Main {
          */
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<String> sentences = sc.parallelize(inputData);
-        JavaRDD<String> words = sentences.flatMap(sentence -> Arrays.asList(sentence.split(" ")).iterator());
-        words.foreach(word -> log.info("Word: " + word));
+        sc.parallelize(inputData)
+            .flatMap(sentence -> Arrays.asList(sentence.split(" ")).iterator())
+            .filter(word -> word.length() > 1)
+            .foreach(word -> log.info("Word: " + word));
 
         sc.close();
 
