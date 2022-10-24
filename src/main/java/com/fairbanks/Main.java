@@ -1,8 +1,6 @@
 package com.fairbanks;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import lombok.extern.log4j.Log4j;
 import org.apache.spark.SparkConf;
@@ -13,12 +11,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 public class Main {
 
     public static void main(String[] args) {
-        List<String> inputData = new ArrayList<>();
-        inputData.add("WARN: Tuesday 4 September 0405");
-        inputData.add("ERROR: Tuesday 4 September 0408");
-        inputData.add("FATAL: Wednesday 5 September 1632");
-        inputData.add("ERROR: Friday 7 September 1854");
-        inputData.add("WARN: Saturday 8 September 1942");
+        /*
+           Configures Hadoop
+         */
+        System.setProperty("hadoop.home.dir", "D:\\code\\spark-4-java-learning\\course materials\\Practicals\\winutils-extra\\hadoop");
 
         /*
           Configures Spark
@@ -32,10 +28,9 @@ public class Main {
          */
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        sc.parallelize(inputData)
-            .flatMap(sentence -> Arrays.asList(sentence.split(" ")).iterator())
-            .filter(word -> word.length() > 1)
-            .foreach(word -> log.info("Word: " + word));
+        sc.textFile("src/main/resources/subtitles/input.txt")
+            .flatMap(line -> Arrays.asList(line.split(" ")).iterator())
+            .foreach(word -> log.info(word));
 
         sc.close();
 
