@@ -35,13 +35,15 @@ public class Main {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> originalLogMessages = sc.parallelize(inputData);
-        JavaPairRDD<String, String> pairRdd = originalLogMessages.mapToPair(logEntry -> {
+        JavaPairRDD<String, Long> pairRdd = originalLogMessages.mapToPair(logEntry -> {
             String[] columns = logEntry.split(":");
             String loggingLevel = columns[0];
-            String timestamp = columns[1];
+            Long timestamp = 1L;
 
             return new Tuple2<>(loggingLevel, timestamp);
         });
+        pairRdd.reduceByKey(Long::sum)
+            .foreach(tuple -> log.info("LogLevel " + tuple._1() + " has " + tuple._2() + " instances"));
 
         sc.close();
 
