@@ -29,8 +29,12 @@ public class Main {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         sc.textFile("src/main/resources/subtitles/input.txt")
-            .flatMap(line -> Arrays.asList(line.split(" ")).iterator())
-            .foreach(word -> log.info(word));
+            .map(sentence -> sentence.replaceAll("[^a-zA-Z\\s]", "").toLowerCase().trim())
+            .filter(sentence -> !sentence.isEmpty())
+            .flatMap(sentence -> Arrays.asList(sentence.split(" ")).iterator())
+            .filter(Util::isNotBoring)
+            .take(50)
+            .forEach(word -> log.info("" + word));
 
         sc.close();
 
