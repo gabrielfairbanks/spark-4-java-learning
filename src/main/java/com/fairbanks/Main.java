@@ -5,8 +5,10 @@ import java.util.List;
 
 import lombok.extern.log4j.Log4j;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import scala.Tuple2;
 
 
 @Log4j
@@ -33,6 +35,13 @@ public class Main {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> originalLogMessages = sc.parallelize(inputData);
+        JavaPairRDD<String, String> pairRdd = originalLogMessages.mapToPair(logEntry -> {
+            String[] columns = logEntry.split(":");
+            String loggingLevel = columns[0];
+            String timestamp = columns[1];
+
+            return new Tuple2<>(loggingLevel, timestamp);
+        });
 
         sc.close();
 
