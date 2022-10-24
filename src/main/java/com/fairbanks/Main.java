@@ -1,12 +1,13 @@
 package com.fairbanks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.extern.log4j.Log4j;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import scala.Tuple2;
 
 
 @Log4j
@@ -32,10 +33,9 @@ public class Main {
          */
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        sc.parallelize(inputData)
-            .mapToPair(logEntry -> new Tuple2<>(logEntry.split(":")[0], 1L))
-            .reduceByKey(Long::sum)
-            .foreach(tuple -> log.info("LogLevel " + tuple._1() + " has " + tuple._2() + " instances"));
+        JavaRDD<String> sentences = sc.parallelize(inputData);
+        JavaRDD<String> words = sentences.flatMap(sentence -> Arrays.asList(sentence.split(" ")).iterator());
+        words.foreach(word -> log.info("Word: " + word));
 
         sc.close();
 
