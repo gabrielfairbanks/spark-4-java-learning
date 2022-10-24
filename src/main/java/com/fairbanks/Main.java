@@ -5,8 +5,6 @@ import java.util.List;
 
 import lombok.extern.log4j.Log4j;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
@@ -34,15 +32,9 @@ public class Main {
          */
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<String> originalLogMessages = sc.parallelize(inputData);
-        JavaPairRDD<String, Long> pairRdd = originalLogMessages.mapToPair(logEntry -> {
-            String[] columns = logEntry.split(":");
-            String loggingLevel = columns[0];
-            Long timestamp = 1L;
-
-            return new Tuple2<>(loggingLevel, timestamp);
-        });
-        pairRdd.reduceByKey(Long::sum)
+        sc.parallelize(inputData)
+            .mapToPair(logEntry -> new Tuple2<>(logEntry.split(":")[0], 1L))
+            .reduceByKey(Long::sum)
             .foreach(tuple -> log.info("LogLevel " + tuple._1() + " has " + tuple._2() + " instances"));
 
         sc.close();
