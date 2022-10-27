@@ -13,11 +13,6 @@ public class Main {
 
     public static void main(String[] args) {
         /*
-           Configures Hadoop
-         */
-        System.setProperty("hadoop.home.dir", "D:\\code\\spark-4-java-learning\\course materials\\Practicals\\winutils-extra\\hadoop");
-
-        /*
           Configures Spark
          */
         SparkConf conf = new SparkConf()
