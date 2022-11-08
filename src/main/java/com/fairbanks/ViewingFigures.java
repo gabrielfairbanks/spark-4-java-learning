@@ -1,6 +1,5 @@
 package com.fairbanks;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +17,6 @@ import scala.Tuple2;
 @Log4j
 public class ViewingFigures {
 
-    private static final DecimalFormat df = new DecimalFormat("0.0000");
-
 
     @SuppressWarnings("resource")
     public static void main(String[] args) {
@@ -27,7 +24,7 @@ public class ViewingFigures {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         // Use true to use hardcoded data identical to that in the PDF guide.
-        boolean testMode = true;
+        boolean testMode = false;
 
         JavaPairRDD<Integer, Integer> viewData = setUpViewDataRdd(sc, testMode);
         JavaPairRDD<Integer, Integer> chapterData = setUpChapterDataRdd(sc, testMode);
@@ -46,9 +43,33 @@ public class ViewingFigures {
             .mapToPair(viewEntry -> new Tuple2<>(viewEntry._1()._2(), viewEntry._2()))
             .join(courseChapterCount)
             .mapToPair(courseViewEntry -> new Tuple2<>(courseViewEntry._1(), (double) courseViewEntry._2()._1() / courseViewEntry._2()._2()))
-            .foreach(viewEntry -> log.info(viewEntry._1() + ", " + df.format(viewEntry._2())));
+            .mapToPair(ViewingFigures::calculateCourseScores)
+            .reduceByKey(Integer::sum)
+            .join(titlesData)
+            .mapToPair(viewEntry -> new Tuple2<>(viewEntry._2()._2(), viewEntry._2()._1()))
+            .mapToPair(Tuple2::swap)
+            .sortByKey(false)
+            .mapToPair(Tuple2::swap)
+            .take(100)
+            .forEach(viewEntry -> log.info(viewEntry._1() + ", " + viewEntry._2()));
 
         sc.close();
+    }
+
+
+    private static Tuple2<Integer, Integer> calculateCourseScores(Tuple2<Integer, Double> courseViewsPercentage) {
+        int score = 0;
+        double percentage = courseViewsPercentage._2();
+        int course = courseViewsPercentage._1();
+
+        if (percentage >= 0.9) {
+            score = 10;
+        } else if (percentage >= 0.5) {
+            score = 4;
+        } else if (percentage >= 0.25) {
+            score = 2;
+        }
+        return new Tuple2<>(course, score);
     }
 
 
