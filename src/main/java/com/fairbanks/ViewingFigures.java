@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.log4j.Log4j;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
 import scala.Tuple2;
 
 
@@ -32,9 +29,18 @@ public class ViewingFigures {
         JavaPairRDD<Integer, Integer> chapterData = setUpChapterDataRdd(sc, testMode);
         JavaPairRDD<Integer, String> titlesData = setUpTitlesDataRdd(sc, testMode);
 
+        log.info("Listing chapter data:");
         chapterData.mapToPair(chapterEntry -> new Tuple2<>(chapterEntry._2(), 1))
-                .reduceByKey(Integer::sum)
-                    .foreach(result -> log.info(result._1()+ " has "+ result._2()+" chapters" ));
+            .reduceByKey(Integer::sum)
+            .foreach(result -> log.info(result._1() + " has " + result._2() + " chapters"));
+
+        log.info("Listing view data: ");
+        viewData.distinct()
+            .mapToPair(viewEntry -> new Tuple2<>(viewEntry._2(), viewEntry._1()))
+            .join(chapterData)
+            .mapToPair(viewEntry -> new Tuple2<>(viewEntry._2(), 1))
+            .reduceByKey(Integer::sum)
+            .foreach(viewEntry -> log.info(viewEntry._1() + ", " + viewEntry._2()));
 
         sc.close();
     }
