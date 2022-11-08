@@ -1,5 +1,6 @@
 package com.fairbanks;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,12 +11,15 @@ import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 
- /**
+/**
  * This class is used in the chapter late in the course where we analyse viewing figures.
  * You can ignore until then.
  */
- @Log4j
+@Log4j
 public class ViewingFigures {
+
+    private static final DecimalFormat df = new DecimalFormat("0.0000");
+
 
     @SuppressWarnings("resource")
     public static void main(String[] args) {
@@ -30,9 +34,8 @@ public class ViewingFigures {
         JavaPairRDD<Integer, String> titlesData = setUpTitlesDataRdd(sc, testMode);
 
         log.info("Listing chapter data:");
-        chapterData.mapToPair(chapterEntry -> new Tuple2<>(chapterEntry._2(), 1))
-            .reduceByKey(Integer::sum)
-            .foreach(result -> log.info(result._1() + " has " + result._2() + " chapters"));
+        JavaPairRDD<Integer, Integer> courseChapterCount = chapterData.mapToPair(chapterEntry -> new Tuple2<>(chapterEntry._2(), 1))
+            .reduceByKey(Integer::sum);
 
         log.info("Listing view data: ");
         viewData.distinct()
@@ -40,7 +43,10 @@ public class ViewingFigures {
             .join(chapterData)
             .mapToPair(viewEntry -> new Tuple2<>(viewEntry._2(), 1))
             .reduceByKey(Integer::sum)
-            .foreach(viewEntry -> log.info(viewEntry._1() + ", " + viewEntry._2()));
+            .mapToPair(viewEntry -> new Tuple2<>(viewEntry._1()._2(), viewEntry._2()))
+            .join(courseChapterCount)
+            .mapToPair(courseViewEntry -> new Tuple2<>(courseViewEntry._1(), (double) courseViewEntry._2()._1() / courseViewEntry._2()._2()))
+            .foreach(viewEntry -> log.info(viewEntry._1() + ", " + df.format(viewEntry._2())));
 
         sc.close();
     }
